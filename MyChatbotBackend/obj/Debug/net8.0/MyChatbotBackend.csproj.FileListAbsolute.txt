@@ -1,12 +1,20 @@
 D:\MyChatbotBackend\bin\Debug\net8.0\appsettings.Development.json
 D:\MyChatbotBackend\bin\Debug\net8.0\appsettings.json
 D:\MyChatbotBackend\bin\Debug\net8.0\MyChatbotBackend.exe
+D:\MyChatbotBackend\bin\Debug\net8.0\Content\MODUL 1.txt
 D:\MyChatbotBackend\bin\Debug\net8.0\MyChatbotBackend.deps.json
 D:\MyChatbotBackend\bin\Debug\net8.0\MyChatbotBackend.runtimeconfig.json
 D:\MyChatbotBackend\bin\Debug\net8.0\MyChatbotBackend.dll
 D:\MyChatbotBackend\bin\Debug\net8.0\MyChatbotBackend.pdb
 D:\MyChatbotBackend\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
 D:\MyChatbotBackend\bin\Debug\net8.0\Microsoft.OpenApi.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Core.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.DocumentLayoutAnalysis.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Fonts.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Package.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Tokenization.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Tokens.dll
+D:\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.dll
 D:\MyChatbotBackend\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
 D:\MyChatbotBackend\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\MyChatbotBackend\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll

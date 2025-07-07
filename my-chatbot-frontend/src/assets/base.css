@@ -1,27 +1,44 @@
-/* color palette from <https://github.com/vuejs/theme> */
+/* src/assets/base.css */
+
+/*
+  Palet Warna dari <https://github.com/vuejs/theme>
+  Definisi variabel CSS untuk warna dasar
+*/
 :root {
+  /* Warna Putih */
   --vt-c-white: #ffffff;
   --vt-c-white-soft: #f8f8f8;
   --vt-c-white-mute: #f2f2f2;
 
+  /* Warna Hitam */
   --vt-c-black: #181818;
   --vt-c-black-soft: #222222;
   --vt-c-black-mute: #282828;
 
+  /* Warna Indigo (biru keunguan) */
   --vt-c-indigo: #2c3e50;
 
+  /* Warna Pembatas (Dividers) - Light Scheme */
   --vt-c-divider-light-1: rgba(60, 60, 60, 0.29);
   --vt-c-divider-light-2: rgba(60, 60, 60, 0.12);
+
+  /* Warna Pembatas (Dividers) - Dark Scheme */
   --vt-c-divider-dark-1: rgba(84, 84, 84, 0.65);
   --vt-c-divider-dark-2: rgba(84, 84, 84, 0.48);
 
+  /* Warna Teks - Light Scheme */
   --vt-c-text-light-1: var(--vt-c-indigo);
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
+
+  /* Warna Teks - Dark Scheme */
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
 }
 
-/* semantic color variables for this project */
+/*
+  Variabel Warna Semantik untuk Proyek Ini
+  Menggunakan variabel dasar untuk definisi warna semantik
+*/
 :root {
   --color-background: var(--vt-c-white);
   --color-background-soft: var(--vt-c-white-soft);
@@ -33,9 +50,13 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
-  --section-gap: 160px;
+  --section-gap: 160px; /* Jarak antar bagian */
 }
 
+/*
+  Media Query untuk Preferensi Skema Warna Gelap (Dark Mode)
+  Mengatur ulang variabel warna semantik untuk dark mode
+*/
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: var(--vt-c-black);
@@ -50,37 +71,42 @@
   }
 }
 
+/*
+  Aturan Global untuk Semua Elemen
+  Reset dasar untuk box-model dan margin/padding
+*/
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  font-weight: normal;
+  box-sizing: border-box; /* Mengatur box model ke border-box */
+  margin: 0; /* Menghilangkan margin default */
+  font-weight: normal; /* Font weight default */
 }
 
+/* Styling dasar untuk Body */
 body {
-  min-height: 100vh;
-  color: var(--color-text);
-  background: var(--color-background);
+  min-height: 100vh; /* Memastikan body setidaknya setinggi viewport */
+  color: var(--color-text); /* Warna teks dari variabel semantik */
+  background: var(--color-background); /* Warna latar belakang dari variabel semantik */
   transition:
-    color 0.5s,
-    background-color 0.5s;
-  line-height: 1.6;
+    color 0.5s, /* Transisi halus untuk perubahan warna teks */
+    background-color 0.5s; /* Transisi halus untuk perubahan warna latar belakang */
+  line-height: 1.6; /* Jarak antar baris */
   font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
+    Inter, /* Font utama */
+    -apple-system, /* Fallback untuk MacOS/iOS */
+    BlinkMacSystemFont, /* Fallback untuk MacOS/iOS */
+    'Segoe UI', /* Fallback untuk Windows */
+    Roboto, /* Fallback untuk Android */
     Oxygen,
     Ubuntu,
     Cantarell,
     'Fira Sans',
     'Droid Sans',
     'Helvetica Neue',
-    sans-serif;
-  font-size: 15px;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    sans-serif; /* Fallback generik */
+  font-size: 15px; /* Ukuran font dasar */
+  text-rendering: optimizeLegibility; /* Mengoptimalkan rendering teks */
+  -webkit-font-smoothing: antialiased; /* Anti-aliasing font untuk Chrome/Safari */
+  -moz-osx-font-smoothing: grayscale; /* Anti-aliasing font untuk Firefox (MacOS) */
 }

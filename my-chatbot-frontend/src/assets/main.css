@@ -1,12 +1,35 @@
-@import './base.css';
+/* src/assets/main.css */
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+@import './base.css'; /* Memuat styling dasar dan reset CSS */
+
+/* Pastikan elemen root HTML dan body mengisi seluruh viewport */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  /* UBAH BARIS INI: */
+  /* overflow: hidden; */ /* Hapus atau ubah menjadi: */
+  overflow-y: auto; /* Ini memungkinkan scroll vertikal jika konten melebihi tinggi */
 }
 
+#app {
+  /* Membuat aplikasi mengisi seluruh lebar dan tinggi yang tersedia */
+  width: 100vw; /* Mengisi 100% lebar viewport */
+  height: 100vh; /* Mengisi 100% tinggi viewport */
+  margin: 0; /* Hilangkan margin untuk efek full screen */
+  padding: 0; /* Hilangkan padding untuk efek edge-to-edge */
+  font-weight: normal;
+
+  /* Menggunakan flexbox untuk tata letak internal (#app memiliki header dan main) */
+  display: flex;
+  flex-direction: column; /* Membuat header dan main bertumpuk vertikal */
+  justify-content: flex-start; /* Memulai konten dari atas */
+  align-items: center; /* Memusatkan konten horizontal di dalam #app */
+}
+
+/* Styling untuk link (tetap sama) */
 a,
 .green {
   text-decoration: none;
@@ -21,15 +44,10 @@ a,
   }
 }
 
+/* Penyesuaian untuk layar laptop dan desktop (lebar minimal 1024px) */
 @media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+  /* Karena semua properti di dalam blok body dan #app sudah dikomentari,
+     kita bisa menghapus blok-blok ini sepenuhnya agar tidak ada 'empty rulesets'.
+     Jika Anda ingin menambahkan CSS spesifik untuk body atau #app di layar > 1024px,
+     Anda bisa menambahkannya di sini. */
 }

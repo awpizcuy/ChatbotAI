@@ -1,0 +1,366 @@
+
+Modul Praktikum
+Data Warehouse and Business Intelligence
+
+
+
+Modul  1
+ETL
+(Extract, Transform, and Load)
+
+Tools
+a. Pengertian ETL
+
+Proses ETL (Extract, Transform, Load) merupakan tahapan krusial dalam pengolahan data yang berperan dalam mendukung analisis bisnis serta pengambilan keputusan berbasis data. ETL mencakup serangkaian langkah untuk mengintegrasikan data dari berbagai sumber, mengubahnya ke dalam format yang sesuai, dan menyimpannya dalam sistem yang mendukung analisis lebih lanjut. Selain itu, proses ETL berfungsi untuk memastikan kualitas data dengan mengatasi redundansi, inkonsistensi, dan masalah integritas, sehingga data yang digunakan lebih akurat, konsisten, dan dapat diandalkan. Berikut adalah penjelasan secara menyeluruh tentang proses ETL:
+
+1. Ekstraksi
+      Ekstraksi merupakan tahap awal dalam proses ETL yang berfungsi untuk mengambil data dari berbagai sumber agar dapat diolah lebih lanjut. Berikut merupakan proses yang terjadi dalam proses ekstraksi :
+a. Penentuan Sumber Data:
+Langkah ini diawali dengan menentukan sumber data yang akan digunakan, yang dapat berupa database, file teks, API, spreadsheet, atau sumber data lainnya.
+b. Ekstraksi Data :
+Proses ekstraksi akan dilakukan menggunakan teknik yang sesuai, seperti menjalankan query pada database, membaca
+
+
+file dalam berbagai format, atau menghubungkan sistem dengan API untuk mengambil data secara otomatis.
+
+
+c. Penyaringan Data
+Penyaringan data dalam ekstraksi dilakukan untuk memastikan hanya data yang relevan dan berkualitas yang diproses lebih lanjut. Teknik yang digunakan meliputi pemfilteran berdasarkan kriteria tertentu, validasi format data, serta pengecualian nilai yang tidak sesuai.
+2. Transform
+      Proses Transform pada ETL merupakan tahap pengubahan data yang sebelumnya telah dikumpulkan dari tahap ekstraksi (extract) agar sesuai dengan kebutuhan analisis atau penyimpanan dalam data warehouse. Transformasi ini bertujuan untuk meningkatkan kualitas data, menyatukan format dari berbagai sumber, serta menerapkan aturan bisnis tertentu. Berikut merupakan beberapa contoh proses utama yang dapat dilakukan dalam tahap transform :
+a. Data Cleansing (Pembersihan Data)
+      Proses ini bertujuan untuk memastikan data yang masuk ke data warehouse sudah bersih dan bebas dari error. Beberapa langkah yang dapat dilakukan dalam proses pembersihan data ini adalah menghapus duplikasi data, menangani nilai yang hilang, memperbaiki format yang tidak konsisten, serta menghapus karakter atau simbol yang tidak diperlukan.
+b. Data Aggregation (Agregasi Data)
+      Proses agregasi digunakan untuk mengelompokkan dan meringkas data berdasarkan kriteria tertentu sesuai kebutuhan bisnis yang ada. Contoh kasus yang dapat diselesaikan menggunakan proses agregasi ini adalah menghitung total penjualan per bulan atau per kategori produk, menghitung rata-rata transaksi per pelanggan, hingga menentukan jumlah transaksi per wilayah.
+
+
+c. Data Validation (Validasi Data)
+      Sebelum data dimuat ke dalam data warehouse, perlu dilakukan validasi untuk memastikan keakuratan dan keintegritasannya. Proses validasi data ini mencakup pengecekan kepatuhan terhadap aturan bisnis dan integritas referensial.
+3. Load
+Load atau pemuatan adalah proses menyimpan data setelah
+ditransformasi ke dalam sistem seperti data warehouse, data mart, atau sistem analitik lainnya. Proses ini memastikan data tersedia untuk pengguna akhir dengan cara yang efektif dan efisien. Dua metode untuk memuat data adalah sebagai berikut :
+a. Muatan Penuh (Full Load)
+
+      Pada proses full load semua data yang berasal dari transformasi menjadi catatan baru dan unik di gudang data. Tujuan dari full load yakni untuk menghasilkan kumpulan data yang tumbuh secara eksponensial dan sulit untuk diatur.
+b. Muatan Tambahan (Incremental Load)
+
+     Incremental Load merupakan metode yang kurang komprehensif, namun proses ini mudah dikelola. Proses ini akan membandingkan data yang masuk dengan data yang sudah ada. Nantinya hanya menghasilkan data tambahan jika ditemukan data yang unik dan baru.
+
+
+4. Manajemen Metadata
+Manajemen Metadata merupakan proses pencatatan dan pengelolaan informasi terkait data dalam sistem ETL. Metadata mencakup definisi struktur data, aturan transformasi, serta sumber data yang digunakan. Fungsi metadata adalah untuk membantu memastikan transparansi dalam aliran data yang memungkinkan pengguna memahami asal usul dan perubahan yang terjadi selama Proses ETL.
+
+
+a. Teknik Penggunaan ETL
+
+      ETL adalah proses utama dalam integrasi data yang mencakup Extract (Ekstraksi), Transform (Transformasi), dan Load (Memuat) data ke dalam sistem tujuan seperti data warehouse. Ada beberapa teknik yang digunakan dalam ETL, yang bergantung pada kebutuhan bisnis, volume data, dan kecepatan pemrosesan yang dibutuhkan.
+
+Berikut adalah beberapa teknik utama dalam penggunaan ETL:
+
+1. ETL Batch Processing
+      ETL Batch Processing adalah salah satu teknik penggunaan ETL yang banyak digunakan dalam berbagai lini bisnis. Teknik ini memproses data dalam kelompok besar, sesuai namanya (batch), pada waktu tertentu, misalnya setiap jam, harian, mingguan, atau bulanan. Penggunaan teknik ini cocok untuk case dimana data berubah dengan frekuensi teratur dan tidak membutuhkan pembaruan data secara real-time.
+       Contoh penggunaan ETL Batch Processing adalah sebagai berikut :
+a. Melakukan pembaruan laporan penjualan harian pada tengah malam berdasarkan transaksi sepanjang hari.
+b. Memproses data payroll pegawai setiap akhir bulan.
+2. ETL Real-Time Processing
+      ETL Real-Time Processing merupakan teknik yang melakukan ekstraksi, perubahan, dan pemuatan data ke sistem penyimpanan secara langsung setelah data tersedia di sumber. Teknik ini dapat memproses dan memuat data dalam hitungan detik atau menit sehingga cocok untuk sistem yang membutuhkan data terbaru secara terus menerus.
+      Contoh penggunaan teknik ETL Real-Time Processing adalah sebagai berikut :
+a. Memantau transaksi keuangan pada bisnis perbankan secara real-time untuk mendeteksi penipuan.
+b. Memperbarui stok barang di e-commerce setiap kali ada pembelian.
+
+
+3. ETL Streaming Processing
+      ETL streaming processing adalah proses ETL yang dilakukan secara real-time pada data yang terus mengalir (streaming data). Stream processing akan memproses data secara terus menerus saat data masuk dengan kecepatan yang tinggi.
+Contoh penggunaan teknik ETL Streaming Processing :
+- Saat kamu menonton film atau mendengarkan lagu, data perilaku kamu (genre yang disukai, waktu tonton, durasi pemutaran) dikumpulkan secara real-time.
+- Transaksi mencurigakan langsung dicegah dalam hitungan detik.
+b. ETL Tools
+
+Jenis ETL Tools
+Kelebihan
+Kekurangan
+Contoh Tools
+Open-Source
+Gratis, fleksibel, dapat dikustomisasi
+Membutuhkan konfigurasi manual
+Talend, Apache Nifi, Pentaho
+Enterprise
+Dukungan vendor, fitur lengkap
+Berbayar, kurang fleksibel
+Informatica, SSIS, DataStage
+Cloud-Based
+Skalabel, tidak butuh server
+Biaya tinggi untuk volume besar
+AWS Glue, Google Dataflow, Azure Data Factory
+Big Data
+Cocok untuk data skala besar
+Kompleks, butuh skill teknis yang tinggi
+Apache Spark, Hadoop, Google BigQuery
+No-Code/Low- Code
+Mudah digunakan, cepat
+Kurang fleksibel dibandingkan solusi berbasis coding
+Hevo Data, Stitch, Fivetran
+
+
+
+
+
+c. Skema Data Warehouse (Skema Bintang dan Snowflake)
+
+Model multidimensional adalah dasar dari data warehouse yang memungkinkan data dianalisis dari berbagai sudut pandang atau dimensi. Model ini memiliki dua komponen utama, yaitu dimensi dan fakta.
+Dimensi merepresentasikan perspektif analisis data, sedangkan fakta berisi nilai numerik atau measure yang digunakan untuk perhitungan. Dalam perancangan data warehouse yang mendukung model multidimensional, terdapat beberapa skema yang umum digunakan, yaitu star schema dan snowflakes.
+1. Star Schema
+
+
+Star schema adalah salah satu skema basis data yang umum digunakan dalam data warehouse. Skema ini terdiri dari satu tabel fakta yang berada di pusat dan dikelilingi oleh beberapa tabel dimensi. Karakteristik utama star schema adalah tabel dimensi yang tidak dinormalisasi, sehingga tidak terpecah seperti pada snowflake schema. Hubungan antara tabel fakta dan tabel dimensi direpresentasikan menggunakan foreign key, yang menghubungkan setiap catatan di tabel fakta dengan entitas
+
+
+terkait dalam tabel dimensi. Berikut merupakan kelebihan dan kekurangan dari star schema:
+a. Kelebihan Star Schema
+1. Mudah dipahami karena modelnya yang lebih sederhana
+2. Proses query lebih cepat pada saat proses OLAP
+3. Kompatibel dengan berbagai alat Business Intelligence (BI)
+b. Kekurangan Star Schema
+1. Redundansi data akibat data yang tidak dinormalisasi
+2. Kurang efisien dalam pengelolaan data yang kompleks
+3. Terbatasnya fleksibilitas terhadap perubahan dimensi
+
+
+
+
+
+
+2. Snowflake Schema
+
+
+
+      Snowflake Schema pada dasarnya menyimpan data yang sama seperti Star Schema. Fact table yang digunakan pada Star Schema maupun pada Snowflake Schema berisi field-field yang sama. Perbedaan utama dari kedua skema tersebut adalah semua tabel dimensi pada Snowflake Schema telah dinormalisasi. Tahap normalisasi tabel-tabel dimensi pada Snowflake Schema ini disebut dengan proses snowflaking sehingga tampilan tabel-tabel pada Snowflake Schema bentuknya menyerupai snowflake.
+a. Kelebihan Snowflake Schema :
+1. Cocok untuk digunakan dalam berbagai modeling tools.
+2. Besar data yang disimpan semakin kecil hasil normalisasi data.
+b. Kekurangan Snowflake Schema :
+1. Skema database yang memiliki level kompleksitas tinggi.
+2. Waktu pemrosesan yang lebih lambat karena level kompleksitas skema tinggi.
+d. Pentaho
+
+      Pentaho adalah sebuah perangkat lunak yang digunakan untuk kebutuhan Business Intelligence (BI) dan integrasi data. Menurut dokumentasi resmi Pentaho, perangkat ini memungkinkan penggunanya untuk menggabungkan data dari berbagai sumber, melakukan transformasi data, serta menyajikan data dalam bentuk laporan atau dashboard yang interaktif. Pentaho juga menyediakan berbagai alat untuk melakukan analisis data secara mendalam.
+1. Pentaho Data Integration (PDI)
+      Menurut Pentaho Documentation, PDI atau disebut juga Kettle adalah alat untuk memproses ETL (Extract, Transform, Load). Hal ini memungkinkan pengguna untuk mengekstrak data dari sumber yang berbeda, melakukan transformasi data sesuai kebutuhan, dan memindahkannya ke tujuan seperti database atau file.
+2. Pentaho Business Analytics
+
+
+      Merupakan sekumpulan alat untuk analisis data, pelaporan, dan pembuatan dashboard interaktif. Ini memungkinkan pengguna bisnis untuk melakukan analisis data dan visualisasi tanpa memerlukan keahlian teknis yang mendalam.
+3. Pentaho Reporting
+
+      Pentaho Reporting adalah komponen yang fokus pada pembuatan laporan bisnis yang kuat dan berformatkan tinggi. Dengan Pentaho Reporting, Anda dapat membuat laporan berbasis tabel, grafik, dan berbagai elemen lainnya.
+4. Pentaho Analysis Services
+
+      Pentaho Analysis Services, atau lebih dikenal dengan Mondrian, adalah mesin OLAP (Online Analytical Processing)yang digunakan dalam Pentaho Business Intelligence (BI) untuk melakukan analisis data multidimensi.
+5. Pentaho Dashboards
+
+      Pentaho Dashboards adalah komponen dalam Pentaho Business Intelligence (BI) yang digunakan untuk membuat dashboard interaktif dengan berbagai jenis visualisasi data seperti grafik, tabel, peta, dan indikator kinerja (KPI).
+6. Pentaho Data Mining
+
+      Pentaho Data Mining adalah bagian dari ekosistem Pentaho Business Intelligence (BI) yang digunakan untuk melakukan analisis data, machine learning, dan prediksi. Teknologi yang digunakan dalam Pentaho Data Mining adalah Weka, sebuah open-source toolkit untuk data mining dan machine learning.
+7. Pentaho Metadata Editor
+
+      Pentaho Metadata Editor (PME) adalah alat dalam ekosistem Pentaho Business Intelligence (BI) yang digunakan untuk membuat, mengelola, dan mendefinisikan metadata yang
+
+
+digunakan dalam laporan dan analisis data. Metadata ini bertindak sebagai perantara antara pengguna bisnis dan database, sehingga pengguna non-teknis dapat mengakses data tanpa perlu memahami SQL atau struktur database yang kompleks.
+8. Pentaho Mobile
+
+      Pentaho Mobile adalah fitur dalam ekosistem Pentaho Business Intelligence (BI) yang memungkinkan pengguna untuk mengakses dashboard, laporan, dan analisis data secara real-time melalui perangkat seluler. Dengan Pentaho Mobile, pengguna bisa memantau KPI, melihat tren bisnis, dan mengambil keputusan di mana saja dan kapan saja.
+
+e. Komponen Pentaho (Kettle)
+
+Beberapa komponen yang sering digunakan dalam melakukan proses ETL pada Pentaho (kettle) diantaranya:
+
+1. Input
+Dalam Pentaho Data Integration (PDI), input mengacu pada berbagai langkah atau elemen yang digunakan untuk memperoleh data dari berbagai sumber. Langkah-langkah ini memungkinkan pengambilan data dari database, file teks, spreadsheet, API, maupun
+
+
+sumber lainnya untuk diproses dalam aliran data. Beberapa contoh umum langkah input dalam PDI meliputi:
+Contoh Input
+Deskripsi
+Table Input
+Mengambil data dari tabel database relasional seperti MySQL, PostgreSQL, SQL Server.
+
+Pentaho Data Integration - #10 Table Input | Table Output
+CSV Input
+Membaca data dari berkas CSV (Comma- Separated Values).
+
+Pentaho Data Integration - #10 Table Input | Table Output
+Excel Input
+Membaca data dari berkas Excel.
+
+Pentaho Data Integration (PDI): Microsoft Excel Input
+JSON Input
+Mengurai data JSON dari berkas atau sumber data JSON.
+
+How to use json input and the rest client in Pentaho 6.1 - Video #1
+Text File Input
+Membaca data dari berkas teks.
+
+How to import data from a TXT file in Pentaho | Pentaho PDI
+XML Input
+Membaca data dari berkas XML.
+
+Get Data from XML in Pentaho
+
+
+2. Output
+Dalam Pentaho Data Integration (PDI), output adalah langkah untuk menulis atau memuat data hasil transformasi ke berbagai tujuan atau format. Tahap ini menentukan penyimpanan atau penggunaan data setelah diproses. Berikut merupakan penjelasan lebih rinci tentang bagian "Output" beserta beberapa contoh:
+
+
+Contoh Output
+Deskripsi
+Excel Output
+Mengekspor data ke dalam format excel.
+
+Pentaho Data Integration - #2 Pengenalan Input Output | CSV File Input | Transform Select values
+XML Output
+Menyimpan data dalam format XML untuk kebutuhan interoperabilitas.
+
+Pentaho ETL Mengubah Microsoft Excel Input To XML Output dengan Select Value & Replace in String
+Table Output
+Mengatur dan menyimpan data ke dalam tabel basis data yang lebih fleksibel.
+
+Pentaho Data Integration - #10 Table Input
+| Table Output
+
+3. Transform
+      Komponen Transform dalam Pentaho Data Integration (PDI) terdiri dari serangkaian langkah atau elemen yang digunakan untuk mengolah dan memanipulasi data. Setelah data diperoleh melalui langkah Input, tahap Transformmemungkinkan berbagai operasi, seperti pembersihan, penggabungan, perhitungan, serta berbagai
+
+
+bentuk transformasi lainnya. Beberapa langkah transformasi yang umum digunakan dalam PDI antara lain:
+
+
+Contoh Transform
+Deskripsi
+Select Values
+Memilih kolom-kolom tertentu dari data masukan dan membuang kolom yang tidak diperlukan
+
+Pentaho Data Integration - #2 Pengenalan Input Output | CSV File Input | Transform Select values
+Filter Rows
+Menyaring baris data berdasarkan kriteria tertentu.
+
+Pentaho Data Integration - #4 Filter Rows
+Calculator
+Melakukan perhitungan matematika atau transformasi kompleks pada data.
+
+Pentaho Data Integration - #8 Calculator
+Sort Rows
+Mengurutkan data berdasarkan kolom tertentu.
+
+Pentaho Data Integration - #6 Merge Join
+Group By
+Mengelompokkan data berdasarkan Pentaho kolom tertentu dan melakukan operasi agregasi seperti SUM, COUNT, dll.
+
+Pentaho PDI1000 - 7 Group By / Filter
+Merge Join
+Menggabungkan data dari beberapa sumber berdasarkan kunci tertentu.
+
+
+
+
+
+Pentaho Data Integration - #6 Merge Join
+
+
+Concat Fields
+Menggabungkan atau menggabungkan nilai dari beberapa kolom atau atribut dalam data menjadi satu kolom Tunggal. Misalnya, Anda memiliki dua kolom terpisah untuk nama depan dan nama belakang, dan Anda ingin menggabungkannya menjadi satu kolom nama lengkap.
+Kolom 1: FirstName
+Kolom 2: LastName
+Hasil Concatenate Fields: "FirstName
+LastName"
+
+Pentaho | Use of concatenate string & Replace in string step
+
+
+Replace in String
+Mengganti nilai atau karakter tertentu dalam kolom data secara dinamis.
+
+Pentaho Data Integration - #5 Replace in String
+
+
+Stream Lookup
+Mencocokkan dan mengambil data dari satu aliran data berdasarkan nilai dalam aliran data lainnya.
+
+Stream lookup step in Pentaho
+
+
+If Field Value is Null
+Mengganti nilai null dalam data nilai default atau nilai lain yang ditentukan.
+
+Pentaho Data Integration - #7 If Field Value
+
+
+
+
+
+is Null
+Unique Rows
+Menghapus duplikasi dalam suatu dataset, sehingga hanya menyisakan baris yang unik berdasarkan kolom tertentu. Step ini baru berfungsi dengan baik pada dataset yang sudah di-sort.
+
+AutomationEdge for Dummies : Unique rows by HashSet(With Subtitle)
+Split Fields
+Membagi satu kolom (field) yang berisi nilai gabungan menjadi beberapa kolom berdasarkan pemisah tertentu.
+
+Split fields in Pentaho
+Sequence
+Menambahkan kolom baru yang berisi angka urut secara otomatis (auto increment).
+
+Pentaho Data Integration (PDI) - Tutorial 3 - Add a sequence - Basic example
+
+
+
+f. Penerapan Pentaho
+Pentaho merupakan salah satu platform Business Intelligence (BI) dan data integration yang digunakan untuk mengolah, menganalisis, dan menampilkan data dalam bentuk yang lebih mudah dipahami. Berikut merupakan tahapan pengolahan data dalam Pentaho :
+1. Pengumpulan dan Integrasi Data
+Pentaho memiliki alat Pentaho Data Integration (PDI) yang dapat digunakan untuk menghubungkan berbagai sumber data seperti database, API, file CSV, XML, JSON, hingga Big Data seperti Hadoop dan NoSQL. Selain itu, Pentaho juga mendukung proses
+
+
+pengambilan data dari berbagai sistem dan menjalankan proses ETL untuk menggabungkan data dari berbagai sumber ke dalam satu sistem yang siap untuk dianalisis.
+2. Transformasi Data
+Setelah data terkumpul, Pentaho memungkinkan pengguna untuk dapat melakukan proses transformasi data yang meliputi pembersihan data, perubahan format data, penggabungan data dari berbagai tabel atau sumber, hingga agregasi data.
+3. Manajemen Data
+Pentaho dengan PDI atau Pentaho Data Integration Server memungkinkan pengguna untuk mengelola dan menjadwalkan alur kerja ETL secara terpusat. Hal ini dapat membantu dalam memonitor aliran data dan menangani kesalahan-kesalahan yang mungkin terjadi dalam proses ETL.
+4. Visualisasi dan Pelaporan
+Pentaho memiliki Pentaho Business Analytics yang dapat digunakan untuk melakukan analisis data dengan visualisasi grafik, tabel, atau peta. Selain itu, untuk memahami analisis data secara lebih mudah, pengguna juga dapat membuat sebuah dashboard interaktif yang dapat membantu dalam menentukan strategi bisnis ke depan.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
