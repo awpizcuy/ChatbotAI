@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\MyChatbotBackend\\MyChatbotBackend.csproj": {}
+    "D:\\Internship\\MyChatbotBackend\\MyChatbotBackend.csproj": {}
   },
   "projects": {
-    "D:\\MyChatbotBackend\\MyChatbotBackend.csproj": {
+    "D:\\Internship\\MyChatbotBackend\\MyChatbotBackend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\MyChatbotBackend\\MyChatbotBackend.csproj",
+        "projectUniqueName": "D:\\Internship\\MyChatbotBackend\\MyChatbotBackend.csproj",
         "projectName": "MyChatbotBackend",
-        "projectPath": "D:\\MyChatbotBackend\\MyChatbotBackend.csproj",
+        "projectPath": "D:\\Internship\\MyChatbotBackend\\MyChatbotBackend.csproj",
         "packagesPath": "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\",
-        "outputPath": "D:\\MyChatbotBackend\\obj\\",
+        "outputPath": "D:\\Internship\\MyChatbotBackend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Hafidz Fadilah\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -46,6 +46,16 @@
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[8.0.17, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.6, )"
+            },
+            "Microsoft.EntityFrameworkCore.SQLite": {
+              "target": "Package",
+              "version": "[9.0.6, )"
             },
             "PdfPig": {
               "target": "Package",

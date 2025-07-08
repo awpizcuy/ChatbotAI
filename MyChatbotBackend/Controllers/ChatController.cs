@@ -8,8 +8,10 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
-using MyChatbotBackend.Models;
-using System.Linq; // Untuk LINQ
+using MyChatbotBackend.Models; // Untuk DocumentChunk, UserQuestion
+using System.Linq;
+using MyChatbotBackend.Data; // Untuk AppDbContext
+using Microsoft.EntityFrameworkCore; // Untuk DbContext
 
 namespace MyChatbotBackend.Controllers
 {
@@ -21,12 +23,14 @@ namespace MyChatbotBackend.Controllers
         private readonly IConfiguration _configuration;
         private readonly List<DocumentChunk> _vectorStore;
         private readonly string _embeddingModelName;
+        private readonly AppDbContext _dbContext; // Instance AppDbContext yang diinjeksi
 
-        public ChatController(HttpClient httpClient, IConfiguration configuration, List<DocumentChunk> vectorStore)
+        public ChatController(HttpClient httpClient, IConfiguration configuration, List<DocumentChunk> vectorStore, AppDbContext dbContext)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _vectorStore = vectorStore;
+            _dbContext = dbContext;
 
             _httpClient.BaseAddress = new Uri(_configuration["OllamaApi:Url"] ?? "http://localhost:11434");
             _embeddingModelName = _configuration["OllamaApi:EmbeddingModelName"] ?? "nomic-embed-text";
@@ -127,6 +131,29 @@ namespace MyChatbotBackend.Controllers
                 return BadRequest(new { error = "Pesan tidak boleh kosong." });
             }
 
+            UserQuestion? userQuestionToSave = null; // Deklarasikan di sini agar bisa diakses di luar try/catch
+
+            // --- Logika Penyimpanan Pertanyaan Pengguna (Bagian 1: Simpan pertanyaan awal) ---
+            try
+            {
+                userQuestionToSave = new UserQuestion
+                {
+                    QuestionText = chatRequest.Message,
+                    AiResponse = "Menunggu respons dari AI...", // Placeholder sebelum jawaban didapatkan
+                    Timestamp = DateTime.Now // <--- UBAH KE DateTime.Now untuk waktu lokal
+                };
+                _dbContext.UserQuestions.Add(userQuestionToSave);
+                await _dbContext.SaveChangesAsync(); // Simpan awal untuk mendapatkan Id
+                Console.WriteLine($"DEBUG DB: Pertanyaan awal disimpan: '{userQuestionToSave.QuestionText}' (Id: {userQuestionToSave.Id})");
+            }
+            catch (Exception dbEx)
+            {
+                Console.WriteLine($"ERROR DB: Gagal menyimpan pertanyaan awal ke database: {dbEx.Message}");
+                userQuestionToSave = null; // Pastikan null jika gagal simpan awal
+            }
+            // --- Akhir Logika Penyimpanan Bagian 1 ---
+
+
             var currentHistory = new List<ChatMessage>(chatRequest.History);
             currentHistory.Add(new ChatMessage { Role = "user", Content = chatRequest.Message });
 
@@ -145,12 +172,10 @@ namespace MyChatbotBackend.Controllers
                             Chunk = chunk,
                             Similarity = CalculateCosineSimilarity(userQueryEmbedding, chunk.Embedding)
                         })
-                        .OrderByDescending(x => x.Similarity) // Urutkan berdasarkan kesamaan
-                        // .Where(x => x.Similarity > 0.7) // <--- KOMENTARI ATAU UBAH THRESHOLD INI
-                        .Take(5) // <--- Ambil 5 chunk teratas (bukan hanya yang > threshold)
+                        .OrderByDescending(x => x.Similarity)
+                        .Take(5)
                         .ToList();
 
-                    // --- LOGGING DIAGNOSTIK BARU ---
                     Console.WriteLine($"DEBUG RAG: Query: '{chatRequest.Message}'");
                     if (relevantChunks.Any())
                     {
@@ -162,21 +187,17 @@ namespace MyChatbotBackend.Controllers
                     } else {
                         Console.WriteLine("DEBUG RAG: Tidak ada chunk yang ditemukan untuk dipertimbangkan.");
                     }
-                    // --- AKHIR LOGGING DIAGNOSTIK BARU ---
 
-                    // Filter ulang chunk yang relevan berdasarkan threshold yang lebih rendah atau fleksibel
-                    var filteredRelevantChunks = relevantChunks.Where(x => x.Similarity > 0.5).ToList(); // <--- COBA THRESHOLD LEBIH RENDAH (0.5 atau 0.6)
+                    var filteredRelevantChunks = relevantChunks.Where(x => x.Similarity > 0.5).ToList(); // Sesuaikan threshold 0.5
 
                     if (filteredRelevantChunks.Any())
                     {
                         Console.WriteLine($"Menemukan {filteredRelevantChunks.Count} chunk relevan (setelah filter).");
                         var context = string.Join("\n\n---\n\n", filteredRelevantChunks.Select(rc => rc.Chunk.Content));
                         
-                        // Prompt ketat ketika ada konteks relevan
                         systemInstruction = $"Anda adalah asisten AI. Tugas Anda adalah menjawab pertanyaan HANYA dan SEPENUHNYA berdasarkan konteks dokumen yang diberikan di bawah ini. JANGAN gunakan pengetahuan umum Anda. Jika jawaban tidak ada di dalam dokumen, atau tidak dapat dijawab secara langsung dari dokumen, katakan 'Maaf, saya tidak dapat menemukan informasi relevan di dokumen yang diberikan. Silakan ajukan pertanyaan lain yang terkait dengan dokumen.'\n\nDokumen:\n{context}\n\n";
                     } else {
                         Console.WriteLine("Tidak ada chunk relevan yang ditemukan setelah filter, memaksa AI untuk menjawab di luar jangkauan.");
-                        // Prompt sangat ketat ketika TIDAK ada konteks relevan
                         systemInstruction = "Anda adalah asisten AI. Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat dijawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Maaf, pertanyaan Anda di luar jangkauan pengetahuan saya berdasarkan dokumen yang tersedia.'";
                     }
                 } else {
@@ -200,15 +221,26 @@ namespace MyChatbotBackend.Controllers
                 stream = false
             };
 
+            string aiMessageContent = "Maaf, tidak ada respons dari AI."; // Default awal jika ada exception
+
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/chat", ollamaPayload);
                 response.EnsureSuccessStatusCode();
 
                 var ollamaResponse = await response.Content.ReadFromJsonAsync<OllamaResponse>();
-                var aiMessageContent = ollamaResponse?.Message?.Content ?? "Maaf, tidak ada respons dari AI.";
+                aiMessageContent = ollamaResponse?.Message?.Content ?? "Maaf, tidak ada respons dari AI.";
 
                 currentHistory.Add(new ChatMessage { Role = "assistant", Content = aiMessageContent });
+
+                // --- Logika Penyimpanan Jawaban AI (Bagian 2: Update jawaban AI) ---
+                if (userQuestionToSave != null) // Hanya update jika penyimpanan awal berhasil
+                {
+                    userQuestionToSave.AiResponse = aiMessageContent;
+                    await _dbContext.SaveChangesAsync(); // Simpan perubahan jawaban AI ke database
+                    Console.WriteLine($"DEBUG DB: Jawaban AI diperbarui untuk Id {userQuestionToSave.Id}.");
+                }
+                // --- Akhir Logika Penyimpanan Bagian 2 ---
 
                 return Ok(new ChatResponse
                 {
@@ -219,16 +251,29 @@ namespace MyChatbotBackend.Controllers
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"Error komunikasi dengan Ollama API: {ex.Message}");
+                // Simpan error ke DB jika userQuestionToSave berhasil
+                if (userQuestionToSave != null) { 
+                    userQuestionToSave.AiResponse = $"Error: {ex.Message}";
+                    await _dbContext.SaveChangesAsync();
+                }
                 return StatusCode(500, new { error = $"Gagal mendapatkan respons dari AI (Jaringan): {ex.Message}" });
             }
             catch (System.Text.Json.JsonException ex)
             {
                 Console.WriteLine($"Error deserialisasi respons Ollama: {ex.Message}");
+                if (userQuestionToSave != null) { 
+                    userQuestionToSave.AiResponse = $"Error: {ex.Message}";
+                    await _dbContext.SaveChangesAsync();
+                }
                 return StatusCode(500, new { error = "Gagal memproses respons dari AI." });
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error tidak terduga: {ex.Message}");
+                if (userQuestionToSave != null) { 
+                    userQuestionToSave.AiResponse = $"Error: {ex.Message}";
+                    await _dbContext.SaveChangesAsync();
+                }
                 return StatusCode(500, new { error = $"Terjadi kesalahan tak terduga: {ex.Message}" });
             }
         }
