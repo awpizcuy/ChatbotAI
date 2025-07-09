@@ -1,2 +1,2 @@
 # ChatbotAI
-ChatbotAI ini harus menginstall Ollama versi 3
+ChatbotAI ini harus menginstall Ollama gemma versi 3
