@@ -1,10 +1,30 @@
-// tsconfig.app.json atau tsconfig.json
 {
-  "extends": "@vue/tsconfig/tsconfig.dom.json", // Atau yang lain
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"], // Pastikan "src/**/*.vue" ada
-  // ... bagian lain ...
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": [
+    "env.d.ts",
+    "src/**/*",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
   "compilerOptions": {
-    // ...
-    "types": ["node", "vue"] // Pastikan ada "vue" di sini jika menggunakan "types"
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    },
+    "types": [
+      "node",
+      "vue"
+    ],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable",
+      "es2023"
+    ]
   }
 }

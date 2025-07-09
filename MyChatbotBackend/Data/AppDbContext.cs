@@ -1,35 +1,22 @@
-// MyChatbotBackend/Data/AppDbContext.cs
 using Microsoft.EntityFrameworkCore;
-using MyChatbotBackend.Models; // Pastikan ini di-include untuk mengakses UserQuestion
+using MyChatbotBackend.Models; // <-- INI BARIS KUNCI YANG MEMPERBAIKI ERROR
 
 namespace MyChatbotBackend.Data
 {
     public class AppDbContext : DbContext
     {
-        // Constructor yang menerima DbContextOptions, ini akan digunakan untuk konfigurasi database
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
 
-        // Properti DbSet untuk setiap model yang ingin Anda simpan di database
-        // Ini akan menjadi representasi tabel 'UserQuestions' di database SQLite Anda
+        // Properti DbSet untuk setiap model/tabel
         public DbSet<UserQuestion> UserQuestions { get; set; }
+        public DbSet<Feedback> Feedbacks { get; set; } // <-- Baris ini sekarang mengenali 'Feedback'
 
-        // Konfigurasi tambahan untuk model jika diperlukan (misalnya indeks unik, nama tabel kustom)
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Contoh: Mengatur QuestionText agar tidak null
-            modelBuilder.Entity<UserQuestion>()
-                .Property(q => q.QuestionText)
-                .IsRequired();
-
-            // --- TAMBAHKAN KONFIGURASI UNTUK AiResponse DI SINI ---
-            modelBuilder.Entity<UserQuestion>()
-                .Property(q => q.AiResponse)
-                .IsRequired();
-
-            // Contoh: Menentukan nama tabel secara eksplisit (opsional, defaultnya UserQuestions)
-            modelBuilder.Entity<UserQuestion>().ToTable("UserQuestions");
+            // Konfigurasi bisa ditambahkan di sini jika perlu
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

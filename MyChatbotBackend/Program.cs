@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 using MyChatbotBackend.Data; // Untuk AppDbContext
 using Microsoft.EntityFrameworkCore; // Untuk DbContext.Database.Migrate()
 using System.Linq; // Untuk Enumerable.Repeat, Where, ToArray
+using MyChatbotBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,10 +29,18 @@ builder.Services.AddCors(options =>
                                  .AllowAnyHeader()
                                  .AllowAnyMethod();
                       });
+
 });
 
 // Tambahkan layanan controllers ke kontainer DI
 builder.Services.AddControllers();
+// Baris ini memberitahu aplikasi cara membuat IYourAIService
+builder.Services.AddScoped<IYourAIService, YourAIService>();
+
+//Konfigurasi Database (sudah ada)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 // Tambahkan HttpClient untuk injeksi dependensi
 builder.Services.AddHttpClient();
@@ -205,6 +214,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();

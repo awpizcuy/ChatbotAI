@@ -1,8 +1,5 @@
-
 Modul Praktikum
 Data Warehouse and Business Intelligence
-
-
 
 Modul  1
 ETL
@@ -101,19 +98,13 @@ Mudah digunakan, cepat
 Kurang fleksibel dibandingkan solusi berbasis coding
 Hevo Data, Stitch, Fivetran
 
-
-
-
-
 c. Skema Data Warehouse (Skema Bintang dan Snowflake)
 
 Model multidimensional adalah dasar dari data warehouse yang memungkinkan data dianalisis dari berbagai sudut pandang atau dimensi. Model ini memiliki dua komponen utama, yaitu dimensi dan fakta.
 Dimensi merepresentasikan perspektif analisis data, sedangkan fakta berisi nilai numerik atau measure yang digunakan untuk perhitungan. Dalam perancangan data warehouse yang mendukung model multidimensional, terdapat beberapa skema yang umum digunakan, yaitu star schema dan snowflakes.
 1. Star Schema
 
-
 Star schema adalah salah satu skema basis data yang umum digunakan dalam data warehouse. Skema ini terdiri dari satu tabel fakta yang berada di pusat dan dikelilingi oleh beberapa tabel dimensi. Karakteristik utama star schema adalah tabel dimensi yang tidak dinormalisasi, sehingga tidak terpecah seperti pada snowflake schema. Hubungan antara tabel fakta dan tabel dimensi direpresentasikan menggunakan foreign key, yang menghubungkan setiap catatan di tabel fakta dengan entitas
-
 
 terkait dalam tabel dimensi. Berikut merupakan kelebihan dan kekurangan dari star schema:
 a. Kelebihan Star Schema
@@ -125,14 +116,7 @@ b. Kekurangan Star Schema
 2. Kurang efisien dalam pengelolaan data yang kompleks
 3. Terbatasnya fleksibilitas terhadap perubahan dimensi
 
-
-
-
-
-
 2. Snowflake Schema
-
-
 
       Snowflake Schema pada dasarnya menyimpan data yang sama seperti Star Schema. Fact table yang digunakan pada Star Schema maupun pada Snowflake Schema berisi field-field yang sama. Perbedaan utama dari kedua skema tersebut adalah semua tabel dimensi pada Snowflake Schema telah dinormalisasi. Tahap normalisasi tabel-tabel dimensi pada Snowflake Schema ini disebut dengan proses snowflaking sehingga tampilan tabel-tabel pada Snowflake Schema bentuknya menyerupai snowflake.
 a. Kelebihan Snowflake Schema :
@@ -147,7 +131,6 @@ d. Pentaho
 1. Pentaho Data Integration (PDI)
       Menurut Pentaho Documentation, PDI atau disebut juga Kettle adalah alat untuk memproses ETL (Extract, Transform, Load). Hal ini memungkinkan pengguna untuk mengekstrak data dari sumber yang berbeda, melakukan transformasi data sesuai kebutuhan, dan memindahkannya ke tujuan seperti database atau file.
 2. Pentaho Business Analytics
-
 
       Merupakan sekumpulan alat untuk analisis data, pelaporan, dan pembuatan dashboard interaktif. Ini memungkinkan pengguna bisnis untuk melakukan analisis data dan visualisasi tanpa memerlukan keahlian teknis yang mendalam.
 3. Pentaho Reporting
@@ -165,7 +148,6 @@ d. Pentaho
 7. Pentaho Metadata Editor
 
       Pentaho Metadata Editor (PME) adalah alat dalam ekosistem Pentaho Business Intelligence (BI) yang digunakan untuk membuat, mengelola, dan mendefinisikan metadata yang
-
 
 digunakan dalam laporan dan analisis data. Metadata ini bertindak sebagai perantara antara pengguna bisnis dan database, sehingga pengguna non-teknis dapat mengakses data tanpa perlu memahami SQL atau struktur database yang kompleks.
 8. Pentaho Mobile
@@ -208,10 +190,8 @@ Membaca data dari berkas XML.
 
 Get Data from XML in Pentaho
 
-
 2. Output
 Dalam Pentaho Data Integration (PDI), output adalah langkah untuk menulis atau memuat data hasil transformasi ke berbagai tujuan atau format. Tahap ini menentukan penyimpanan atau penggunaan data setelah diproses. Berikut merupakan penjelasan lebih rinci tentang bagian "Output" beserta beberapa contoh:
-
 
 Contoh Output
 Deskripsi
@@ -232,9 +212,7 @@ Pentaho Data Integration - #10 Table Input
 3. Transform
       Komponen Transform dalam Pentaho Data Integration (PDI) terdiri dari serangkaian langkah atau elemen yang digunakan untuk mengolah dan memanipulasi data. Setelah data diperoleh melalui langkah Input, tahap Transformmemungkinkan berbagai operasi, seperti pembersihan, penggabungan, perhitungan, serta berbagai
 
-
 bentuk transformasi lainnya. Beberapa langkah transformasi yang umum digunakan dalam PDI antara lain:
-
 
 Contoh Transform
 Deskripsi
@@ -261,12 +239,7 @@ Pentaho PDI1000 - 7 Group By / Filter
 Merge Join
 Menggabungkan data dari beberapa sumber berdasarkan kunci tertentu.
 
-
-
-
-
 Pentaho Data Integration - #6 Merge Join
-
 
 Concat Fields
 Menggabungkan atau menggabungkan nilai dari beberapa kolom atau atribut dalam data menjadi satu kolom Tunggal. Misalnya, Anda memiliki dua kolom terpisah untuk nama depan dan nama belakang, dan Anda ingin menggabungkannya menjadi satu kolom nama lengkap.
@@ -276,7 +249,6 @@ Hasil Concatenate Fields: "FirstName
 LastName"
 
 Pentaho | Use of concatenate string & Replace in string step
-
 
 Replace in String
 Mengganti nilai atau karakter tertentu dalam kolom data secara dinamis.

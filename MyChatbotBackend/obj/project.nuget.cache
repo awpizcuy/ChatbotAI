@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "8ng5ZxceiW0=",
+  "dgSpecHash": "Qbfszla6RKY=",
   "success": true,
   "projectFilePath": "D:\\Internship\\MyChatbotBackend\\MyChatbotBackend.csproj",
   "expectedPackageFiles": [
@@ -36,7 +36,6 @@
     "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\microsoft.extensions.primitives\\9.0.6\\microsoft.extensions.primitives.9.0.6.nupkg.sha512",
     "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\microsoft.openapi\\1.6.14\\microsoft.openapi.1.6.14.nupkg.sha512",
     "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\mono.texttemplating\\3.0.0\\mono.texttemplating.3.0.0.nupkg.sha512",
-    "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\pdfpig\\0.1.10\\pdfpig.0.1.10.nupkg.sha512",
     "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.10\\sqlitepclraw.bundle_e_sqlite3.2.1.10.nupkg.sha512",
     "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\sqlitepclraw.core\\2.1.10\\sqlitepclraw.core.2.1.10.nupkg.sha512",
     "C:\\Users\\Hafidz Fadilah\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.10\\sqlitepclraw.lib.e_sqlite3.2.1.10.nupkg.sha512",
