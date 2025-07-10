@@ -9,9 +9,11 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using MyChatbotBackend.Models; // Untuk DocumentChunk, UserQuestion
-using System.Linq;
+using System.Linq; // Untuk LINQ
 using MyChatbotBackend.Data; // Untuk AppDbContext
 using Microsoft.EntityFrameworkCore; // Untuk DbContext
+using MyChatbotBackend.Services; // Untuk IAiChatService, OllamaChatService, dll.
+using Microsoft.Extensions.DependencyInjection; // Untuk GetRequiredService dari IServiceProvider
 
 namespace MyChatbotBackend.Controllers
 {
@@ -23,14 +25,16 @@ namespace MyChatbotBackend.Controllers
         private readonly IConfiguration _configuration;
         private readonly List<DocumentChunk> _vectorStore;
         private readonly string _embeddingModelName;
-        private readonly AppDbContext _dbContext; // Instance AppDbContext yang diinjeksi
+        private readonly AppDbContext _dbContext;
+        private readonly IServiceProvider _serviceProvider;
 
-        public ChatController(HttpClient httpClient, IConfiguration configuration, List<DocumentChunk> vectorStore, AppDbContext dbContext)
+        public ChatController(HttpClient httpClient, IConfiguration configuration, List<DocumentChunk> vectorStore, AppDbContext dbContext, IServiceProvider serviceProvider)
         {
             _httpClient = httpClient;
             _configuration = configuration;
             _vectorStore = vectorStore;
             _dbContext = dbContext;
+            _serviceProvider = serviceProvider;
 
             _httpClient.BaseAddress = new Uri(_configuration["OllamaApi:Url"] ?? "http://localhost:11434");
             _embeddingModelName = _configuration["OllamaApi:EmbeddingModelName"] ?? "nomic-embed-text";
@@ -50,12 +54,12 @@ namespace MyChatbotBackend.Controllers
         {
             [JsonPropertyName("message")]
             public string Message { get; set; } = string.Empty;
-
             [JsonPropertyName("history")]
             public List<ChatMessage> History { get; set; } = new List<ChatMessage>();
+            [JsonPropertyName("model")]
+            public string Model { get; set; } = "ollama";
         }
-        
-        // Tambahkan DTO ini jika belum ada di file lain
+
         public class OllamaEmbeddingRequest
         {
             [JsonPropertyName("model")]
@@ -133,8 +137,7 @@ namespace MyChatbotBackend.Controllers
                 return null;
             }
         }
-        
-        // --- PENAMBAHAN FUNGSI HELPER BARU ---
+
         private bool IsChitChat(string question)
         {
             var lowerCaseQuestion = question.ToLowerInvariant();
@@ -146,20 +149,15 @@ namespace MyChatbotBackend.Controllers
             return chitChatKeywords.Any(keyword => lowerCaseQuestion.Contains(keyword));
         }
 
-        private async Task<string> GetSimpleAIChatResponseAsync(List<ChatMessage> history)
+        private IAiChatService GetChatService(string modelName)
         {
-            var ollamaPayload = new
+            return modelName.ToLower() switch
             {
-                model = _configuration["OllamaApi:ModelName"] ?? "gemma3",
-                messages = history,
-                stream = false
+                "deepseek" => _serviceProvider.GetRequiredService<DeepseekChatService>(),
+                "meta" => _serviceProvider.GetRequiredService<MetaChatService>(),
+                _ => _serviceProvider.GetRequiredService<OllamaChatService>(),
             };
-            var response = await _httpClient.PostAsJsonAsync("api/chat", ollamaPayload);
-            response.EnsureSuccessStatusCode();
-            var ollamaResponse = await response.Content.ReadFromJsonAsync<OllamaResponse>();
-            return ollamaResponse?.Message?.Content ?? "Maaf, saya tidak bisa merespons saat ini.";
         }
-        // --- PENAMBAHAN FUNGSI HELPER SELESAI ---
 
         // --- Endpoint Chatbot Utama ---
         [HttpPost]
@@ -170,70 +168,47 @@ namespace MyChatbotBackend.Controllers
                 return BadRequest(new { error = "Pesan tidak boleh kosong." });
             }
 
-            // --- PENAMBAHAN BLOK IF-ELSE UNTUK SAPAAN ---
+            UserQuestion? userQuestionToSave = null;
+            ActionResult<ChatResponse> finalResult; // Deklarasi variabel untuk hasil akhir
+
+            // --- Logika Penyimpanan Pertanyaan Pengguna (Bagian 1: Simpan pertanyaan awal) ---
+            try
+            {
+                userQuestionToSave = new UserQuestion
+                {
+                    QuestionText = chatRequest.Message,
+                    AiResponse = "Menunggu respons dari AI...",
+                    Timestamp = DateTime.Now
+                };
+                _dbContext.UserQuestions.Add(userQuestionToSave);
+                await _dbContext.SaveChangesAsync();
+                Console.WriteLine($"DEBUG DB: Pertanyaan awal disimpan: '{userQuestionToSave.QuestionText}' (Id: {userQuestionToSave.Id})");
+            }
+            catch (Exception dbEx)
+            {
+                Console.WriteLine($"ERROR DB: Gagal menyimpan pertanyaan awal ke database: {dbEx.Message}");
+                return StatusCode(500, new { error = $"Gagal menyimpan pertanyaan pengguna: {dbEx.Message}" });
+            }
+            // --- Akhir Logika Penyimpanan Bagian 1 ---
+
+
+            var currentHistory = new List<ChatMessage>(chatRequest.History);
+            currentHistory.Add(new ChatMessage { Role = "user", Content = chatRequest.Message });
+            
+            // --- Logika Penentuan systemInstruction ---
+            string systemInstruction = "";
+
+            // --- Logika Penentuan systemInstruction ---
             if (IsChitChat(chatRequest.Message))
             {
-                Console.WriteLine("DEBUG: Mendeteksi sapaan, melewati RAG.");
-                var chitChatHistory = new List<ChatMessage>(chatRequest.History);
-                chitChatHistory.Add(new ChatMessage { Role = "user", Content = chatRequest.Message });
-
-                // Menambahkan instruksi sistem sederhana untuk sapaan
-                chitChatHistory.Insert(0, new ChatMessage { Role = "system", Content = "Anda adalah asisten AI yang ramah. Balas sapaan pengguna dengan singkat dan sopan." });
-
-                string aiMessageContent = await GetSimpleAIChatResponseAsync(chitChatHistory);
-                chitChatHistory.Add(new ChatMessage { Role = "assistant", Content = aiMessageContent });
-
-                // Menyimpan percakapan sapaan ke database
-                try
-                {
-                    var userQuestionToSave = new UserQuestion
-                    {
-                        QuestionText = chatRequest.Message,
-                        AiResponse = aiMessageContent,
-                        Timestamp = DateTime.Now
-                    };
-                    _dbContext.UserQuestions.Add(userQuestionToSave);
-                    await _dbContext.SaveChangesAsync();
-                    Console.WriteLine($"DEBUG DB: Sapaan disimpan dengan ID {userQuestionToSave.Id}.");
-                }
-                catch (Exception dbEx)
-                {
-                    Console.WriteLine($"ERROR DB: Gagal menyimpan sapaan ke database: {dbEx.Message}");
-                }
-
-                return Ok(new ChatResponse
-                {
-                    Reply = aiMessageContent,
-                    History = chitChatHistory
-                });
+                Console.WriteLine($"DEBUG: Mendeteksi sapaan.");
+                // Instruksi untuk sapaan
+                systemInstruction = "Anda adalah asisten AI yang ramah, sopan, dan gaul. Pahami berbagai gaya bahasa pengguna (formal, santai, gaul) dan respons Anda harus selalu seperti manusia pada umumnya. Balas sapaan pengguna dengan singkat, ramah, dan gaya bahasa yang santai."; // <--- PERBARUI DI SINI
             }
-            else // Jika bukan sapaan, jalankan logika RAG yang sudah ada
+            else // Ini adalah alur RAG
             {
-                // --- KODE ASLI ANDA DIMULAI DI SINI (TIDAK DIUBAH) ---
-                UserQuestion? userQuestionToSave = null; 
-
-                try
-                {
-                    userQuestionToSave = new UserQuestion
-                    {
-                        QuestionText = chatRequest.Message,
-                        AiResponse = "Menunggu respons dari AI...",
-                        Timestamp = DateTime.Now
-                    };
-                    _dbContext.UserQuestions.Add(userQuestionToSave);
-                    await _dbContext.SaveChangesAsync();
-                    Console.WriteLine($"DEBUG DB: Pertanyaan awal disimpan: '{userQuestionToSave.QuestionText}' (Id: {userQuestionToSave.Id})");
-                }
-                catch (Exception dbEx)
-                {
-                    Console.WriteLine($"ERROR DB: Gagal menyimpan pertanyaan awal ke database: {dbEx.Message}");
-                    userQuestionToSave = null;
-                }
-
-                var currentHistory = new List<ChatMessage>(chatRequest.History);
-                currentHistory.Add(new ChatMessage { Role = "user", Content = chatRequest.Message });
-
-                string systemInstruction = "";
+                // Deklarasikan relevantChunks di scope yang lebih tinggi dalam blok else ini
+                IEnumerable<dynamic> relevantChunks = Enumerable.Empty<dynamic>();
 
                 if (_vectorStore != null && _vectorStore.Any())
                 {
@@ -241,7 +216,7 @@ namespace MyChatbotBackend.Controllers
 
                     if (userQueryEmbedding != null && userQueryEmbedding.Any())
                     {
-                        var relevantChunks = _vectorStore
+                        relevantChunks = _vectorStore
                             .Select(chunk => new
                             {
                                 Chunk = chunk,
@@ -259,9 +234,7 @@ namespace MyChatbotBackend.Controllers
                             {
                                 Console.WriteLine($"- Sim: {rc.Similarity:F4}, Content: {rc.Chunk.Content.Substring(0, Math.Min(rc.Chunk.Content.Length, 100))}...");
                             }
-                        }
-                        else
-                        {
+                        } else {
                             Console.WriteLine("DEBUG RAG: Tidak ada chunk yang ditemukan untuk dipertimbangkan.");
                         }
 
@@ -271,88 +244,64 @@ namespace MyChatbotBackend.Controllers
                         {
                             Console.WriteLine($"Menemukan {filteredRelevantChunks.Count} chunk relevan (setelah filter).");
                             var context = string.Join("\n\n---\n\n", filteredRelevantChunks.Select(rc => rc.Chunk.Content));
-                            systemInstruction = $"Anda adalah asisten AI. Tugas Anda adalah menjawab pertanyaan HANYA dan SEPENUHNYA berdasarkan konteks dokumen yang diberikan di bawah ini. JANGAN gunakan pengetahuan umum Anda. Jika jawaban tidak ada di dalam dokumen, atau tidak dapat dijawab secara langsung dari dokumen, katakan 'Maaf, saya tidak dapat menemukan informasi relevan di dokumen yang diberikan. Silakan ajukan pertanyaan lain yang terkait dengan dokumen.'\n\nDokumen:\n{context}\n\n";
-                        }
-                        else
-                        {
+                            
+                            // Prompt ketika ada konteks relevan
+                            systemInstruction = $"Anda adalah asisten AI yang ramah, sopan, dan gaul, seperti manusia pada umumnya. Pahami berbagai gaya bahasa pertanyaan pengguna (formal, santai, gaul, pertanyaan yang diulang dengan gaya berbeda). Tugas Anda adalah menjawab pertanyaan HANYA dan SEPENUHNYA berdasarkan konteks dokumen yang diberikan di bawah ini. Gunakan bahasa yang adaptif (bisa formal, santai, atau gaul) sesuai konteks percakapan, tetapi selalu ramah dan informatif. JANGAN gunakan pengetahuan umum Anda. Jika jawaban tidak ada di dalam dokumen, atau tidak dapat dijawab secara langsung dari dokumen, katakan 'Yah, maaf banget nih, info itu kayaknya nggak ada di dokumen yang aku punya. Coba tanya yang lain yang masih nyambung sama dokumennya ya!'\n\nDokumen:\n{context}\n\n"; // <--- PERBARUI DI SINI
+                        } else {
                             Console.WriteLine("Tidak ada chunk relevan yang ditemukan setelah filter, memaksa AI untuk menjawab di luar jangkauan.");
-                            systemInstruction = "Anda adalah asisten AI. Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat dijawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Maaf, pertanyaan Anda di luar jangkauan pengetahuan saya berdasarkan dokumen yang tersedia.'";
+                            // Prompt ketika TIDAK ada konteks relevan
+                            systemInstruction = "Anda adalah asisten AI yang ramah, sopan, dan gaul, seperti manusia pada umumnya. Pahami berbagai gaya bahasa pertanyaan pengguna (formal, santai, gaul, pertanyaan yang diulang dengan gaya berbeda). Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat dijawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Yah, maaf banget nih, pertanyaanmu di luar jangkauan pengetahuan aku berdasarkan dokumen yang ada. Coba tanya yang lain aja ya!'"; // <--- PERBARUI DI SINI
                         }
-                    }
-                    else
-                    {
+                    } else {
                         Console.WriteLine("Gagal mendapatkan embedding untuk query pengguna, memaksa AI untuk menjawab di luar jangkauan.");
-                        systemInstruction = "Anda adalah asisten AI. Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat dijawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Maaf, pertanyaan Anda di luar jangkauan pengetahuan saya berdasarkan dokumen yang tersedia.'";
+                        systemInstruction = "Anda adalah asisten AI yang ramah, sopan, dan gaul, seperti manusia pada umumnya. Pahami berbagai gaya bahasa pertanyaan pengguna (formal, santai, gaul, pertanyaan yang diulang dengan gaya berbeda). Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat dijawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Maaf, pertanyaan Anda di luar jangkauan pengetahuan saya berdasarkan dokumen yang tersedia.'"; // <--- PERBARUI DI SINI
                     }
-                }
-                else
-                {
+                } else {
                     Console.WriteLine("Vector store kosong atau null, memaksa AI untuk menjawab di luar jangkauan.");
-                    systemInstruction = "Anda adalah asisten AI. Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat dijawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Maaf, pertanyaan Anda di luar jangkauan pengetahuan saya berdasarkan dokumen yang tersedia.'";
+                    systemInstruction = "Anda adalah asisten AI yang ramah, sopan, dan gaul, seperti manusia pada umumnya. Pahami berbagai gaya bahasa pertanyaan pengguna (formal, santai, gaul, pertanyaan yang diulang dengan gaya berbeda). Tugas Anda adalah HANYA menjawab pertanyaan berdasarkan dokumen yang telah diberikan. Anda TIDAK memiliki akses ke pengetahuan umum atau internet. Jika pertanyaan pengguna tidak dapat menjawab SAMA SEKALI dari dokumen yang Anda miliki, Anda HARUS membalas: 'Maaf, pertanyaan Anda di luar jangkauan pengetahuan saya berdasarkan dokumen yang tersedia.'"; // <--- PERBARUI DI SINI
                 }
 
-                currentHistory.Insert(0, new ChatMessage { Role = "system", Content = systemInstruction });
-
-                var ollamaPayload = new
-                {
-                    model = _configuration["OllamaApi:ModelName"] ?? "gemma3",
-                    messages = currentHistory,
-                    stream = false
-                };
-
-                string aiMessageContent = "Maaf, tidak ada respons dari AI.";
-
-                try
-                {
-                    var response = await _httpClient.PostAsJsonAsync("api/chat", ollamaPayload);
-                    response.EnsureSuccessStatusCode();
-                    var ollamaResponse = await response.Content.ReadFromJsonAsync<OllamaResponse>();
-                    aiMessageContent = ollamaResponse?.Message?.Content ?? "Maaf, tidak ada respons dari AI.";
-                    currentHistory.Add(new ChatMessage { Role = "assistant", Content = aiMessageContent });
-
-                    if (userQuestionToSave != null)
-                    {
-                        userQuestionToSave.AiResponse = aiMessageContent;
-                        await _dbContext.SaveChangesAsync();
-                        Console.WriteLine($"DEBUG DB: Jawaban AI diperbarui untuk Id {userQuestionToSave.Id}.");
-                    }
-
-                    return Ok(new ChatResponse
-                    {
-                        Reply = aiMessageContent,
-                        History = currentHistory
-                    });
-                }
-                catch (HttpRequestException ex)
-                {
-                    Console.WriteLine($"Error komunikasi dengan Ollama API: {ex.Message}");
-                    if (userQuestionToSave != null) { 
-                        userQuestionToSave.AiResponse = $"Error: {ex.Message}";
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    return StatusCode(500, new { error = $"Gagal mendapatkan respons dari AI (Jaringan): {ex.Message}" });
-                }
-                catch (System.Text.Json.JsonException ex)
-                {
-                    Console.WriteLine($"Error deserialisasi respons Ollama: {ex.Message}");
-                    if (userQuestionToSave != null) { 
-                        userQuestionToSave.AiResponse = $"Error: {ex.Message}";
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    return StatusCode(500, new { error = "Gagal memproses respons dari AI." });
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error tidak terduga: {ex.Message}");
-                    if (userQuestionToSave != null) { 
-                        userQuestionToSave.AiResponse = $"Error: {ex.Message}";
-                        await _dbContext.SaveChangesAsync();
-                    }
-                    return StatusCode(500, new { error = $"Terjadi kesalahan tak terduga: {ex.Message}" });
-                }
-                // --- KODE ASLI ANDA SELESAI DI SINI ---
             }
-            // --- PENAMBAHAN BLOK IF-ELSE SELESAI ---
+            // --- AKHIR Logika Penentuan systemInstruction ---
+            
+            // SELALU sisipkan system message ini di awal currentHistory
+            currentHistory.Insert(0, new ChatMessage { Role = "system", Content = systemInstruction });
+
+            // --- Panggilan AI melalui service dinamis ---
+            IAiChatService chatService = GetChatService(chatRequest.Model);
+            string aiMessageContent = "Maaf, tidak ada respons dari AI.";
+
+            try
+            {
+                aiMessageContent = await chatService.GetChatResponseAsync(currentHistory);
+                
+                currentHistory.Add(new ChatMessage { Role = "assistant", Content = aiMessageContent });
+
+                // --- Logika Penyimpanan Jawaban AI (Bagian 2: Update jawaban AI) ---
+                if (userQuestionToSave != null)
+                {
+                    userQuestionToSave.AiResponse = aiMessageContent;
+                    await _dbContext.SaveChangesAsync(); 
+                    Console.WriteLine($"DEBUG DB: Jawaban AI diperbarui untuk Id {userQuestionToSave.Id}.");
+                }
+                // --- Akhir Logika Penyimpanan Bagian 2 ---
+
+                finalResult = Ok(new ChatResponse // <-- SET HASIL
+                {
+                    Reply = aiMessageContent,
+                    History = currentHistory
+                });
+            }
+            catch (Exception ex) // Tangkap semua exception dari panggilan chatService
+            {
+                Console.WriteLine($"Error komunikasi atau pemrosesan AI: {ex.Message}");
+                if (userQuestionToSave != null) { 
+                    userQuestionToSave.AiResponse = $"Error: {ex.Message}";
+                    await _dbContext.SaveChangesAsync();
+                }
+                finalResult = StatusCode(500, new { error = $"Gagal mendapatkan respons dari AI: {ex.Message}" }); // <-- SET HASIL
+            }
+            return finalResult; // <--- KEMBALIKAN HASIL DI AKHIR
         }
     }
 }

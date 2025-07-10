@@ -41,13 +41,6 @@ D:\Internship\MyChatbotBackend\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 D:\Internship\MyChatbotBackend\bin\Debug\net8.0\Microsoft.Extensions.Primitives.dll
 D:\Internship\MyChatbotBackend\bin\Debug\net8.0\Microsoft.OpenApi.dll
 D:\Internship\MyChatbotBackend\bin\Debug\net8.0\Mono.TextTemplating.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Core.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.DocumentLayoutAnalysis.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Fonts.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Package.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Tokenization.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.Tokens.dll
-D:\Internship\MyChatbotBackend\bin\Debug\net8.0\UglyToad.PdfPig.dll
 D:\Internship\MyChatbotBackend\bin\Debug\net8.0\SQLitePCLRaw.batteries_v2.dll
 D:\Internship\MyChatbotBackend\bin\Debug\net8.0\SQLitePCLRaw.core.dll
 D:\Internship\MyChatbotBackend\bin\Debug\net8.0\SQLitePCLRaw.provider.e_sqlite3.dll

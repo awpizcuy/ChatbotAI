@@ -1,29 +1,37 @@
 <template>
   <div id="chat-container">
     <div id="chat-header">
-      <div class="status-indicator"></div>
-      <h3>AI Assistant</h3>
+      <div class="header-left">
+        <div class="status-indicator"></div>
+        <h3>AI Assistant</h3> </div>
+      <div class="model-selector">
+        <select v-model="selectedModel" class="styled-select">
+          <option value="Ollama">Ollama (Lokal)</option>
+          <option value="DeepSeek">DeepSeek</option>
+          <option value="META">META</option>
+        </select>
+      </div>
     </div>
 
     <div id="chat-messages">
-      <div v-for="msg in messages" :key="msg.id" :class="['message', msg.sender + '-message']">
-        <div v-if="msg.sender === 'ai'" v-html="renderMarkdown(msg.text)" class="markdown-content"></div>
-        <template v-else>{{ msg.text }}</template>
+      <TransitionGroup name="message-fade" tag="div" class="message-list-wrapper">
+        <div v-for="msg in messages" :key="msg.id" :class="['message', msg.sender + '-message', { 'is-typing': msg.isTyping }]">
+          <div v-if="msg.sender === 'ai' && !msg.isTyping" v-html="renderMarkdown(msg.text)" class="markdown-content"></div>
+          <div v-else-if="msg.sender === 'ai' && msg.isTyping" class="typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+          <template v-else>{{ msg.text }}</template>
 
-        <div v-if="msg.sender === 'ai'" class="feedback-actions">
-           <button @click.stop="handleFeedback(msg.id, 'like')" class="feedback-btn" :class="{ 'active like': msg.feedback === 'like' }" title="Jawaban membantu">
-             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M1 8.25a1.25 1.25 0 1 1 2.5 0v7.5a1.25 1.25 0 1 1-2.5 0v-7.5ZM18.5 9.25a1.5 1.5 0 0 0-1.5-1.5h-5.553a.75.75 0 0 1-.723-.553L9.7 4.957A1.5 1.5 0 0 0 8.277 4H5.25a1.5 1.5 0 0 0-1.5 1.5v10.5a1.5 1.5 0 0 0 1.5 1.5h9.25a1.5 1.5 0 0 0 1.425-1.087l1.385-5.25a1.5 1.5 0 0 0-1.31-1.913Z" /></svg>
-          </button>
-          <button @click.stop="handleFeedback(msg.id, 'dislike')" class="feedback-btn" :class="{ 'active dislike': msg.feedback === 'dislike' }" title="Jawaban tidak membantu">
-             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M19 11.75a1.25 1.25 0 1 1-2.5 0v-7.5a1.25 1.25 0 1 1 2.5 0v7.5ZM1.5 10.75a1.5 1.5 0 0 0 1.5 1.5h5.553a.75.75 0 0 1 .723.553l1.024 2.296a1.5 1.5 0 0 0 1.423 1.051h2.5a1.5 1.5 0 0 0 1.5-1.5V4.5a1.5 1.5 0 0 0-1.5-1.5h-9.25a1.5 1.5 0 0 0-1.425 1.087l-1.385 5.25a1.5 1.5 0 0 0 1.31-1.913Z" /></svg>
-          </button>
+          <div v-if="msg.sender === 'ai' && !msg.isTyping" class="feedback-actions">
+            <button @click.stop="handleFeedback(msg.id, 'like')" class="feedback-btn" :class="{ 'active like': msg.feedback === 'like' }" title="Jawaban membantu">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M1 8.25a1.25 1.25 0 1 1 2.5 0v7.5a1.25 1.25 0 1 1-2.5 0v-7.5ZM18.5 9.25a1.5 1.5 0 0 0-1.5-1.5h-5.553a.75.75 0 0 1-.723-.553L9.7 4.957A1.5 1.5 0 0 0 8.277 4H5.25a1.5 1.5 0 0 0-1.5 1.5v10.5a1.5 1.5 0 0 0 1.5 1.5h9.25a1.5 1.5 0 0 0 1.425-1.087l1.385-5.25a1.5 1.5 0 0 0-1.31-1.913Z" /></svg>
+            </button>
+            <button @click.stop="handleFeedback(msg.id, 'dislike')" class="feedback-btn" :class="{ 'active dislike': msg.feedback === 'dislike' }" title="Jawaban tidak membantu">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path d="M19 11.75a1.25 1.25 0 1 1-2.5 0v-7.5a1.25 1.25 0 1 1 2.5 0v7.5ZM1.5 10.75a1.5 1.5 0 0 0 1.5 1.5h5.553a.75.75 0 0 1 .723.553l1.024 2.296a1.5 1.5 0 0 0 1.423 1.051h2.5a1.5 1.5 0 0 0 1.5-1.5V4.5a1.5 1.5 0 0 0-1.5-1.5h-9.25a1.5 1.5 0 0 0-1.425 1.087l-1.385 5.25a1.5 1.5 0 0 0 1.31-1.913Z" /></svg>
+            </button>
+          </div>
         </div>
-      </div>
-      <div v-if="isLoading" class="message ai-message typing-indicator">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
+      </TransitionGroup>
     </div>
 
     <form @submit.prevent="sendMessage" id="chat-input-form">
@@ -39,10 +47,13 @@
 </template>
 
 <script setup lang="ts">
+// ... (Kode Script setup tetap sama dari sebelumnya) ...
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import type { Ref } from 'vue';
 import MarkdownIt from 'markdown-it';
+
+const selectedModel = ref('Ollama');
 
 // PASTIKAN INI SESUAI DENGAN PORT BACKEND .NET ANDA
 const BACKEND_API_URL = 'http://localhost:5225/api/Chat';
@@ -56,6 +67,7 @@ interface UIMessage {
   id: number;
   text: string;
   sender: 'user' | 'ai';
+  isTyping?: boolean;
   feedback?: 'like' | 'dislike' | null;
 }
 
@@ -70,12 +82,13 @@ const messageIdCounter = ref(0);
 const md = new MarkdownIt();
 
 // Fungsi untuk menambahkan pesan ke UI
-const addMessageToChat = (text: string, sender: 'user' | 'ai') => {
+const addMessageToChat = (text: string, sender: 'user' | 'ai', isTyping: boolean = false) => {
   messageIdCounter.value++;
   messages.value.push({
     id: messageIdCounter.value,
     text,
     sender,
+    isTyping,
     feedback: null
   });
   setTimeout(() => {
@@ -95,7 +108,6 @@ const renderMarkdown = (markdownText: string): string => {
 // === FUNGSI INI TELAH DIPERBARUI UNTUK MENGIRIM DATA KE BACKEND ===
 // ==================================================================
 const handleFeedback = async (messageId: number, feedbackType: 'like' | 'dislike') => {
-  // 1. Cari pesan yang akan diberi feedback
   const messageIndex = messages.value.findIndex(m => m.id === messageId);
   if (messageIndex === -1) {
     console.error(`Pesan dengan ID ${messageId} tidak ditemukan.`);
@@ -105,16 +117,13 @@ const handleFeedback = async (messageId: number, feedbackType: 'like' | 'dislike
   const message = messages.value[messageIndex];
   const originalFeedback = message.feedback;
 
-  // 2. Perbarui tampilan UI secara optimis
   message.feedback = message.feedback === feedbackType ? null : feedbackType;
 
-  // 3. Siapkan data untuk dikirim
   const reversedMessages = [...messages.value].reverse();
   const reversedIndex = reversedMessages.findIndex(m => m.id < messageId && m.sender === 'user');
   const userMessageIndex = reversedIndex !== -1 ? messages.value.length - 1 - reversedIndex : -1;
   const userQuestion = userMessageIndex > -1 ? messages.value[userMessageIndex].text : '';
 
-  // 4. Lakukan pemanggilan API ke backend di dalam blok try...catch
   try {
     console.log("Mencoba mengirim feedback ke backend...");
 
@@ -127,7 +136,6 @@ const handleFeedback = async (messageId: number, feedbackType: 'like' | 'dislike
 
     console.log("Feedback berhasil dikirim:", response.data);
 
-    // Jika di-dislike dan backend memberikan jawaban baru, perbarui UI
     if (feedbackType === 'dislike' && response.data.newReply) {
       messages.value[messageIndex].text = response.data.newReply;
       messages.value[messageIndex].feedback = null;
@@ -135,12 +143,11 @@ const handleFeedback = async (messageId: number, feedbackType: 'like' | 'dislike
 
   } catch (error) {
     console.error("GAGAL mengirim feedback:", error);
-    // Jika gagal, kembalikan tampilan UI ke state semula
     messages.value[messageIndex].feedback = originalFeedback;
   }
 };
 // ==================================================================
-// === AKHIR PERUBAHAN FUNGSI                                     ===
+// === AKHIR PERUBAHAN FUNGSI                                      ===
 // ==================================================================
 
 
@@ -153,35 +160,42 @@ const sendMessage = async () => {
   userInput.value = '';
   isLoading.value = true;
 
-  setTimeout(() => {
-    const chatMessagesDiv = document.getElementById('chat-messages');
-    if (chatMessagesDiv) {
-      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    }
-  }, 100);
+  // --- MENAMBAHKAN INDIKATOR "MENGETIK..." ---
+  const typingMessageIndex = messages.value.length;
+  addMessageToChat('...', 'ai', true); // Tambahkan pesan mengetik sementara
+  // --- AKHIR MENAMBAHKAN INDIKATOR ---
 
   try {
     const response = await axios.post(BACKEND_API_URL, {
       message: message,
-      history: chatHistory.value
+      history: chatHistory.value,
+      model: selectedModel.value
     });
+
+    // --- MENGHAPUS INDIKATOR "MENGETIK..." ---
+    if (messages.value[typingMessageIndex] && messages.value[typingMessageIndex].isTyping) {
+        messages.value.splice(typingMessageIndex, 1);
+    }
+    // --- AKHIR MENGHAPUS INDIKATOR ---
 
     if (response.data && response.data.reply && response.data.history) {
       const reply: string = response.data.reply;
       const newHistory: ChatMessage[] = response.data.history;
 
-      isLoading.value = false;
       addMessageToChat(reply, 'ai');
       chatHistory.value = newHistory;
 
     } else {
-      isLoading.value = false;
       console.error('Respons backend tidak valid:', response.data);
       addMessageToChat('Maaf, respons AI tidak lengkap atau tidak valid.', 'ai');
     }
 
   } catch (error: unknown) {
-    isLoading.value = false;
+    // --- MENGHAPUS INDIKATOR SAAT ERROR ---
+    if (messages.value[typingMessageIndex] && messages.value[typingMessageIndex].isTyping) {
+        messages.value.splice(typingMessageIndex, 1);
+    }
+    // --- AKHIR MENGHAPUS INDIKATOR ---
     console.error('Error sending message:', error);
     if (axios.isAxiosError(error)) {
       if (error.response) {
@@ -196,6 +210,8 @@ const sendMessage = async () => {
     } else {
       addMessageToChat(`Terjadi kesalahan yang sangat tidak terduga.`, 'ai');
     }
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -206,9 +222,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Menggunakan font yang lebih modern jika tersedia */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* DEFINE PALET WARNA KUSTOM */
+:root {
+  --primary-purple: #6c5ce7;
+  --primary-purple-dark: #4a3abf;
+  --primary-purple-light: #8d7fe6;
+  --secondary-gray: #e5e7eb;
+  --secondary-gray-dark: #1f2937;
+  --text-dark: #111827;
+  --text-light: #f9fafb;
+  --success-green: #22c55e;
+  --danger-red: #ef4444;
+  --border-light: #e5e7eb;
+}
 
+/* Styling CSS dasar untuk chatbot - DIUBAH UNTUK TAMPILAN LEBIH BAIK */
 #chat-container {
   max-width: 800px;
   width: 100%;
@@ -228,6 +256,7 @@ onMounted(() => {
 /* === HEADER === */
 #chat-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
   background-color: #f9fafb;
@@ -240,6 +269,12 @@ onMounted(() => {
   font-weight: 600;
   color: #111827;
 }
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
 .status-indicator {
   width: 10px;
   height: 10px;
@@ -249,6 +284,38 @@ onMounted(() => {
   box-shadow: 0 0 8px #22c55e;
 }
 
+/* === MODEL SELECTOR === */
+.model-selector {
+  position: relative; /* Untuk positioning dropdown */
+}
+.styled-select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9em;
+  color: #111827;
+  appearance: none; /* Hilangkan panah default */
+  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 16px;
+  transition: all 0.2s ease;
+}
+.styled-select:hover {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+}
+.styled-select:focus {
+  outline: none;
+  border-color: #4a3abf;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+}
+
+
+/* === CHAT MESSAGES AREA === */
 #chat-messages {
   flex-grow: 1;
   padding: 24px;
@@ -274,6 +341,7 @@ onMounted(() => {
   background: #9ca3af;
 }
 
+/* === PESAN CHAT === */
 .message {
   padding: 14px 20px;
   border-radius: 20px;
@@ -302,7 +370,7 @@ onMounted(() => {
 
 .user-message {
   background: linear-gradient(100deg, #4f46e5 0%, #7c3aed 100%);
-  color: white;
+  color: white; /* Dipastikan putih untuk kontras */
   align-self: flex-end;
   margin-left: auto;
   border-bottom-right-radius: 5px;
@@ -314,6 +382,7 @@ onMounted(() => {
   border-bottom-left-radius: 5px;
 }
 
+/* === FEEDBACK ACTIONS === */
 .feedback-actions {
   display: flex;
   align-items: center;
@@ -351,24 +420,24 @@ onMounted(() => {
 }
 
 .typing-indicator {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 18px 20px;
+display: flex;
+align-items: center;
+gap: 5px;
+padding: 18px 20px;
 }
 .typing-indicator span {
-    width: 8px;
-    height: 8px;
-    background-color: #9ca3af;
-    border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out both;
+width: 8px;
+height: 8px;
+background-color: #9ca3af;
+border-radius: 50%;
+animation: bounce 1.4s infinite ease-in-out both;
 }
 .typing-indicator span:nth-of-type(1) { animation-delay: -0.32s; }
 .typing-indicator span:nth-of-type(2) { animation-delay: -0.16s; }
 
 @keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1.0); }
+0%, 80%, 100% { transform: scale(0); }
+40% { transform: scale(1.0); }
 }
 
 .ai-message :deep(p) { margin-top: 0; margin-bottom: 0.5em; }
@@ -377,105 +446,117 @@ onMounted(() => {
 .ai-message :deep(ul), .ai-message :deep(ol) { padding-left: 20px; margin: 0.5em 0; }
 .ai-message :deep(h1), .ai-message :deep(h2), .ai-message :deep(h3) { margin-top: 1em; margin-bottom: 0.5em; font-weight: 600; color: #111827; }
 .ai-message :deep(pre) {
-    background-color: #1f2937;
-    color: #e5e7eb;
-    border-radius: 8px;
-    padding: 12px 16px;
-    overflow-x: auto;
-    font-family: 'Fira Code', 'Consolas', monospace;
-    font-size: 0.9em;
-    margin: 1em 0;
+background-color: #1f2937;
+color: #e5e7eb;
+border-radius: 8px;
+padding: 12px 16px;
+overflow-x: auto;
+font-family: 'Fira Code', 'Consolas', monospace;
+font-size: 0.9em;
+margin: 1em 0;
 }
 .ai-message :deep(code) {
-    background-color: rgba(0,0,0,0.1);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-family: 'Fira Code', 'Consolas', monospace;
-    font-size: 0.9em;
+background-color: rgba(0,0,0,0.1);
+border-radius: 4px;
+padding: 2px 6px;
+font-family: 'Fira Code', 'Consolas', monospace;
+font-size: 0.9em;
 }
 
 #chat-input-form {
-  display: flex;
-  align-items: center;
-  padding: 16px 24px;
-  border-top: 1px solid #e5e7eb;
-  background-color: #ffffff;
-  gap: 12px;
+display: flex;
+align-items: center;
+padding: 16px 24px;
+border-top: 1px solid #e5e7eb;
+background-color: #ffffff;
+gap: 12px;
 }
 
 #user-input {
-  flex-grow: 1;
-  padding: 12px 20px;
-  border: 1px solid #d1d5db;
-  border-radius: 9999px;
-  font-size: 1em;
-  transition: all 0.2s ease-in-out;
-  background-color: #f9fafb;
+flex-grow: 1;
+padding: 12px 20px;
+border: 1px solid #d1d5db;
+border-radius: 9999px;
+font-size: 1em;
+transition: all 0.2s ease-in-out;
+background-color: #f9fafb;
 }
 #user-input:focus {
-  border-color: #4f46e5;
-  background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-  outline: none;
+border-color: #4f46e5;
+background-color: #ffffff;
+box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+outline: none;
 }
 #user-input:disabled {
-  background-color: #e5e7eb;
-  cursor: not-allowed;
+background-color: #e5e7eb;
+cursor: not-allowed;
 }
 
 #send-button {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(100deg, #4f46e5 0%, #6366f1 100%);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-  box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.4);
+flex-shrink: 0;
+width: 48px;
+height: 48px;
+background: linear-gradient(100deg, #4f46e5 0%, #6366f1 100%);
+color: white;
+border: none;
+border-radius: 50%;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+box-shadow: 0 4px 10px -2px rgba(79, 70, 229, 0.4);
 }
 #send-button:hover:not(:disabled) {
-  background: linear-gradient(100deg, #4338ca 0%, #4f46e5 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 15px -3px rgba(79, 70, 229, 0.5);
+background: linear-gradient(100deg, #4338ca 0%, #4f46e5 100%);
+transform: translateY(-2px);
+box-shadow: 0 6px 15px -3px rgba(79, 70, 229, 0.5);
 }
 #send-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px -1px rgba(79, 70, 229, 0.5);
+transform: translateY(0);
+box-shadow: 0 2px 5px -1px rgba(79, 70, 229, 0.5);
 }
 #send-button:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  box-shadow: none;
+background: #9ca3af;
+cursor: not-allowed;
+box-shadow: none;
 }
 
 .loader {
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+width: 20px;
+height: 20px;
+border: 3px solid rgba(255, 255, 255, 0.3);
+border-top-color: #ffffff;
+border-radius: 50%;
+animation: spin 1s linear infinite;
 }
 @keyframes spin {
-    to { transform: rotate(360deg); }
+to { transform: rotate(360deg); }
 }
 
 @media (max-width: 768px) {
-  #chat-container {
-    height: 100vh;
-    width: 100%;
-    margin: 0;
-    border-radius: 0;
-    border: none;
-  }
-  .message {
-    max-width: 85%;
-    font-size: 0.9em;
-  }
+#chat-container {
+height: 100vh;
+width: 100%;
+margin: 0;
+border-radius: 0;
+border: none;
+}
+.message {
+max-width: 85%;
+font-size: 0.9em;
+}
+
+.model-selector select {
+padding: 6px 10px;
+border-radius: 8px;
+border: 1px solid #d1d5db;
+background-color: #f9fafb;
+font-family: 'Inter', sans-serif;
+font-size: 0.9em;
+}
+
 }
 </style>
+
+berikan kode yang sudah saya buatkan seperti sebelumnya

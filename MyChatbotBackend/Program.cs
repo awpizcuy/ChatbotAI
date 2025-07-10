@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore; // Untuk DbContext.Database.Migrate()
 using System.Linq; // Untuk Enumerable.Repeat, Where, ToArray
 using MyChatbotBackend.Services;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Tambahkan layanan CORS
@@ -34,6 +35,7 @@ builder.Services.AddCors(options =>
 
 // Tambahkan layanan controllers ke kontainer DI
 builder.Services.AddControllers();
+
 // Baris ini memberitahu aplikasi cara membuat IYourAIService
 builder.Services.AddScoped<IYourAIService, YourAIService>();
 
@@ -188,6 +190,12 @@ builder.Services.AddSingleton<List<DocumentChunk>>(sp =>
 // Konfigurasi Swagger/OpenAPI untuk dokumentasi API
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Daftarkan semua service AI yang tersedia
+builder.Services.AddScoped<OllamaChatService>();
+builder.Services.AddScoped<DeepseekChatService>();
+builder.Services.AddScoped<MetaChatService>();
+
 
 var app = builder.Build();
 
